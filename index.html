@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>drvspace 실시간 쿠팡 특가 큐레이션</title>
+  <style>
+    :root {
+      --bg: #0f141c;
+      --card-bg: #18202c;
+      --card-border: #263345;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --badge-red: #ef4444;
+      --badge-bg: rgba(239, 68, 68, 0.15);
+      --btn-coupang: #0074e9;
+      --btn-coupang-hover: #005bb5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 0 16px 40px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* Header */
+    header {
+      padding: 28px 4px 20px;
+      text-align: center;
+    }
+
+    .profile-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    p.subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Filters */
+    .filter-wrapper {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 0 16px;
+      scrollbar-width: none;
+    }
+    .filter-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-chip.active {
+      background: var(--text-main);
+      color: #0b0f17;
+      border-color: var(--text-main);
+    }
+
+    /* Product List */
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.15s, border-color 0.2s;
+    }
+
+    .product-card:active {
+      transform: scale(0.99);
+      border-color: var(--accent);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tag-category {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .discount-badge {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--badge-red);
+      background: var(--badge-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .card-body {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .product-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .product-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .product-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 6px;
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .price-origin {
+      font-size: 13px;
+      color: #64748b;
+      text-decoration: line-through;
+    }
+
+    .price-current {
+      font-size: 18px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .price-unit {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Button */
+    .btn-buy {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      background: var(--btn-coupang);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background 0.2s;
+    }
+
+    .btn-buy:active {
+      background: var(--btn-coupang-hover);
+    }
+
+    /* Footer Notice */
+    footer {
+      margin-top: 32px;
+      padding: 16px 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+
+    footer p {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="profile-badge">
+      <span>⚡</span>
+      <span>스레드 @drvspace1882 추천픽</span>
+    </div>
+    <h1>실시간 쿠팡 골드박스 특가룸</h1>
+    <p class="subtitle">매일 직접 검증해서 올리는 실시간 할인템 모음</p>
+  </header>
+
+  <div class="filter-wrapper">
+    <button class="filter-chip active" onclick="filterItems('all', this)">전체보기</button>
+    <button class="filter-chip" onclick="filterItems('kitchen', this)">주방/생활</button>
+    <button class="filter-chip" onclick="filterItems('food', this)">식품</button>
+    <button class="filter-chip" onclick="filterItems('beauty', this)">뷰티</button>
+  </div>
+
+  <div class="product-list" id="productList">
+    <!-- Item (11-02 12시 최신 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">간식/건강</span>
+        <span class="discount-badge">46% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🥣</div>
+        <div class="product-info">
+          <div class="product-title">투데이넛 너트한줌 요거트 견과세트 600g, 1세트</div>
+          <div class="price-row">
+            <span class="price-origin">27,500원</span>
+            <span class="price-current">14,710<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ildtDLa2YC" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item (11-02 09시 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">음료/건강</span>
+        <span class="discount-badge">49% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🥛</div>
+        <div class="product-info">
+          <div class="product-title">아몬드브리즈 오리지널 190ml 24개</div>
+          <div class="price-row">
+            <span class="price-origin">26,400원</span>
+            <span class="price-current">13,240<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ik0KJouB4K" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item (11-01 21시 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">디저트/초콜릿</span>
+        <span class="discount-badge">31% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🍫</div>
+        <div class="product-info">
+          <div class="product-title">메이커스초콜릿 수제 파베 생초콜릿 선물세트 130g 1개 (스윗밀크 파베)</div>
+          <div class="price-row">
+            <span class="price-origin">18,000원</span>
+            <span class="price-current">12,400<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ika9FJLnoa" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item (11-01 18시 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">식품/정육</span>
+        <span class="discount-badge">48% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🥓</div>
+        <div class="product-info">
+          <div class="product-title">곰곰 보리먹인 캐나다산 삼겹살 구이용 1kg 1개 (로켓프레시)</div>
+          <div class="price-row">
+            <span class="price-origin">31,990원</span>
+            <span class="price-current">16,580<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ijYjMQZOGy" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item (11-01 12시 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">식품/간편식</span>
+        <span class="discount-badge">50% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🥟</div>
+        <div class="product-info">
+          <div class="product-title">비비고 든든한섬만두 (냉동) 320g 2개</div>
+          <div class="price-row">
+            <span class="price-origin">13,960원</span>
+            <span class="price-current">6,980<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ijyyx1iT2i" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item 0 (11-01 09시 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">식품/라면</span>
+        <span class="discount-badge">30% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🍜</div>
+        <div class="product-info">
+          <div class="product-title">참깨세트 인기봉지라면 4종 19개입 (쨔파게티5 참깨라면4 너구리5 신라면5)</div>
+          <div class="price-row">
+            <span class="price-origin">36,900원</span>
+            <span class="price-current">25,500<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ijlPacjkfk" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item 1 (10-31 21시 등록) -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">디저트/간식</span>
+        <span class="discount-badge">50% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🍨</div>
+        <div class="product-info">
+          <div class="product-title">라라스윗 초콜릿 아이스밀크 (냉동) 474ml 1개</div>
+          <div class="price-row">
+            <span class="price-origin">11,900원</span>
+            <span class="price-current">5,900<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/iiwdRyIQ8a" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item 1 -->
+    <div class="product-card" data-category="kitchen">
+      <div class="card-top">
+        <span class="tag-category">주방용품</span>
+        <span class="discount-badge">73% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🍳</div>
+        <div class="product-info">
+          <div class="product-title">테팔 인덕션 스테인리스 스틸 이지쿡 편수냄비 16cm</div>
+          <div class="price-row">
+            <span class="price-origin">83,100원</span>
+            <span class="price-current">21,900<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/ihTE4xHjZA" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item 2 -->
+    <div class="product-card" data-category="kitchen">
+      <div class="card-top">
+        <span class="tag-category">생활/세탁</span>
+        <span class="discount-badge">75% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🧺</div>
+        <div class="product-info">
+          <div class="product-title">리큐 냄새싹 실내건조 액체세제 리필 2.1L × 6개</div>
+          <div class="price-row">
+            <span class="price-origin">76,800원</span>
+            <span class="price-current">19,070<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/igRlJVKgvI" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item 3 -->
+    <div class="product-card" data-category="food">
+      <div class="card-top">
+        <span class="tag-category">정육/식품</span>
+        <span class="discount-badge">16% 특가</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🥩</div>
+        <div class="product-info">
+          <div class="product-title">호주산 우삼겹 바로구이 대패 (냉동) 500g 1팩</div>
+          <div class="price-row">
+            <span class="price-origin">8,900원</span>
+            <span class="price-current">7,400<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/iijpJDjkAK" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+
+    <!-- Item 4 -->
+    <div class="product-card" data-category="beauty">
+      <div class="card-top">
+        <span class="tag-category">클렌징/뷰티</span>
+        <span class="discount-badge">58% OFF</span>
+      </div>
+      <div class="card-body">
+        <div class="product-icon">🫧</div>
+        <div class="product-info">
+          <div class="product-title">해피바스 마이크로 클린 솝베리 버블 클렌징폼 300ml × 2개</div>
+          <div class="price-row">
+            <span class="price-origin">15,800원</span>
+            <span class="price-current">6,590<span class="price-unit">원</span></span>
+          </div>
+        </div>
+      </div>
+      <a href="https://link.coupang.com/a/igRlJVKgvI" target="_blank" rel="noopener noreferrer" class="btn-buy">
+        쿠팡에서 최저가 확인하기 ➔
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <p>이 포스팅은 쿠팡 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받습니다.</p>
+  </footer>
+</div>
+
+<script>
+  function filterItems(category, btn) {
+    document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+      if (category === 'all' || card.getAttribute('data-category') === category) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
