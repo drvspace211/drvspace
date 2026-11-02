@@ -2,4 +2,4 @@
 
 스레드 프로필 연동 모바일 특가 페이지
 
-GitHub Pages: https://drvspace211.github.io/curation-deals/
+GitHub Pages: https://drvspace211.github.io/drvspace/
